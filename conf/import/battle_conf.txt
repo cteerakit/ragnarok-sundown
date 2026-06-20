@@ -1,2 +1,6 @@
 area_size: 25
 max_walk_path: 25
+
+// conf/battle/client.conf
+// Don't show rAthena version/Git Hash to players on login
+display_version: no

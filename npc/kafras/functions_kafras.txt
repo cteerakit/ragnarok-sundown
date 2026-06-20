@@ -145,8 +145,12 @@ function	script	F_Kafra	{
 	.@menu$ = implode(.@K_Menu0$,":");
 	while (true) {
 		.@j = select(.@menu$) - 1;
-		if (.@K_Menu0$[.@j] == "Save")
-			return;
+		if (.@K_Menu0$[.@j] == "Save") {
+			// Custom: all Kafra Save points lead to the main city.
+			savepoint "payo2",90,119;
+			callfunc "F_KafEnd",.@welcome,1,"in Payon";
+			end;
+		}
 		else if (.@K_Menu0$[.@j] == "Use Storage") {
 			if (.@welcome == 2)// Do not charge for Guild Storage
 				callfunc "F_KafStor",2,0,0;
@@ -645,7 +649,7 @@ function	script	F_KafSet	{
 	} else if (.@map$ == "umbala") {
 		setarray @wrpD$[0], "Comodo";
 		setarray @wrpP[0], 1800;
-	} else if (.@map$ == "payon") {
+	} else if (.@map$ == "payon" || .@map$ == "payo2") {
 		setarray @wrpD$[0], "Prontera", "Alberta", "Morocc";
 		setarray @wrpP[0], 1200, 1200, 1200;
 	} else if (.@map$ == "yuno") {

@@ -242,7 +242,7 @@ OnRecvCastlePy05:
 
 payo2,99,116,4	script	Kafra Employee::kaf_oldpayon	113,{
 	cutin "kafra_05",2;
-	callfunc "F_KafSetPay";
+	callfunc "F_KafSet";
 
 	mes "[Kafra Employee]";
 	mes "The Kafra Corporation";
