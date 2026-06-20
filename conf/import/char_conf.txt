@@ -1,4 +1,5 @@
 login_ip: login
-char_ip: 0.0.0.0
+char_ip: ro.hopto.org
 pincode_enabled: no
 char_del_delay: 0
+bind_ip: 0.0.0.0

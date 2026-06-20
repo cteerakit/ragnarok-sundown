@@ -1,0 +1,29 @@
+Header:
+  Type: PLAYER_GROUP_DB
+  Version: 1
+
+Body:
+  - Id: 0
+    Name: Player
+    Level: 0
+    Commands:
+      changedress: true
+      # copied from Super Player:
+      commands: true
+      charcommands: true
+      rates: true
+      go: true
+      load: true
+      autoloot: true
+      alootid: true
+      autoloottype: true
+      autotrade: true
+      channel: true
+      mobinfo: true
+      iteminfo: true
+      whodrops: true
+      # ...etc (the rest of the Super Player list, lines 62-93)
+    Permissions:
+      can_trade: true
+      can_party: true
+      attendance: true
