@@ -5,8 +5,12 @@
 //grf: C:\Program Files\Gravity\RO\rdata.grf
 //grf: C:\Program Files\Gravity\RO\data.grf
 
+grf: D:\RO\Client\2026.grf
+grf: D:\RO\Client\data.grf
+
 //-----------------------------------------
 // Data Directory
 // Use the base folder, not the data\ path.
 //-----------------------------------------
 //data_dir: C:\Program Files\Gravity\RO\
+data_dir: D:\RO\Client\
