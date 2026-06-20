@@ -46,3 +46,5 @@ base_exp_rate: 1500
 job_exp_rate: 1500
 mvp_exp_rate: 1500
 quest_exp_rate: 1500
+// Extra EXP per additional attacker on a monster (default 25).
+exp_bonus_attacker: 100

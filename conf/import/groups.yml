@@ -7,7 +7,8 @@ Body:
     Name: Player
     Level: 0
     Commands:
-      changedress: true
+      # NOTE: do not re-list commands already granted by the base Player group
+      # (changedress, resurrect) - duplicates abort the whole import entry.
       # copied from Super Player:
       commands: true
       charcommands: true
