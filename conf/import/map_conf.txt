@@ -1,0 +1,5 @@
+// Tell the map server how to reach the char container
+char_ip: char
+
+// Bind to all interfaces
+map_ip: 0.0.0.0
