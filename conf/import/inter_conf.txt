@@ -1,0 +1,16 @@
+// MySQL Login server
+login_server_ip: rathena-db
+
+ipban_db_ip: rathena-db
+
+// MySQL Character server
+char_server_ip: rathena-db
+
+// MySQL Map Server
+map_server_ip: rathena-db
+
+// MySQL Web Server
+web_server_ip: rathena-db
+
+// MySQL Log Database
+log_db_ip: rathena-db
