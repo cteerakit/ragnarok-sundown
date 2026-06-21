@@ -2027,7 +2027,9 @@
 #endif
 
 #if PACKETVER_MAIN_NUM >= 20230705
-	parseable_packet( HEADER_CZ_REQ_EMOTION_EXPANSION, sizeof( struct PACKET_CZ_REQ_EMOTION_EXPANSION ), clif_parse_dull, 0 );
+	// Modern clients send normal emotes via the expansion packet; route it to the real handler.
+	// The emote id sits at offset 4, so pass it as pos[0]. See rAthena issue #9514.
+	parseable_packet( HEADER_CZ_REQ_EMOTION_EXPANSION, sizeof( struct PACKET_CZ_REQ_EMOTION_EXPANSION ), clif_parse_Emotion, 4 );
 #endif
 
 #if PACKETVER_MAIN_NUM >= 20230802

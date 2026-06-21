@@ -11625,13 +11625,23 @@ void clif_parse_Emotion(int32 fd, map_session_data *sd){
 		return;
 	}
 
+#if PACKETVER_MAIN_NUM >= 20230705
+	// Modern clients deliver the emote through CZ_REQ_EMOTION_EXPANSION (0x0be9);
+	// the emote id lives at the offset registered in pos[0].
+	emotion_type emoticon = static_cast<emotion_type>( RFIFOB( fd, packet_db[RFIFOW( fd, 0 )].pos[0] ) );
+
+	if( emoticon >= ET_MAX ){
+		return;
+	}
+#else
 	const PACKET_CZ_REQ_EMOTION* p = reinterpret_cast<PACKET_CZ_REQ_EMOTION*>( RFIFOP( fd, 0 ) );
 
 	if( p->emotion_type >= ET_MAX ){
 		return;
 	}
-	
+
 	emotion_type emoticon = static_cast<emotion_type>( p->emotion_type );
+#endif
 
 	if (battle_config.basic_skill_check == 0 || pc_checkskill(sd, NV_BASIC) >= 2 || pc_checkskill(sd, SU_BASIC_SKILL) >= 1) {
 		if (emoticon == ET_CHAT_PROHIBIT) {// prevent use of the mute emote [Valaris]
