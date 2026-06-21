@@ -49,6 +49,11 @@ zeny_from_mobs: yes
 // party's total EXP scales to N*100%, so each member receives a full 100%.
 party_even_share_bonus: 100
 
+// conf/battle/feature.conf
+// Disable the Battleground queue interface. With this on, the client's
+// "Battle field entrance settings" window can auto-pop. Turn off to stop it.
+feature.bgqueue: off
+
 // conf/battle/exp.conf
 // 50x EXP multiplier (5000 = 50x). Stacks with the flattened curve in
 // db/re/job_exp.yml (see tools/exp_curve.py).
