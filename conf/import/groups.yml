@@ -15,6 +15,7 @@ Body:
       rates: true
       go: true
       load: true
+      jump: true
       autoloot: true
       alootid: true
       autoloottype: true
