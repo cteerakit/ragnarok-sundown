@@ -1074,6 +1074,56 @@ M_Menu:
 
 // City Guide -------------------------------------------------
 /* payo2 City Guide NPC disabled (payo2 NPC cleanup)
+payo2,100,122,4	script	Repairman#oldpay	86,{
+	mes "[Repairman]";
+	mes "Hey there!";
+	mes "Do you want me";
+	mes "to repair any items?";
+	mes "I'll fix them up for free!";
+	next;
+	switch(select("Actually, I do have some items...:None at the moment.")) {
+	case 1:
+		.@checkitem = 1;
+		while (getbrokenid(.@checkitem) != 0)
+			.@checkitem++;
+		.@checkitem--;
+		if (!.@checkitem) {
+			mes "[Repairman]";
+			mes "Oh wow, this is incredible!";
+			mes "You must take very good care of your things. None of your items are damaged!";
+			close;
+		}
+		mes "[Repairman]";
+		mes "Out of all your items,";
+		mes "" + .@checkitem + " are damaged.";
+		mes "Would you like to repair them? It's free!";
+		next;
+		switch(select("Yes:No")) {
+		case 1:
+			while (.@checkitem) {
+				repair(.@checkitem);
+				.@checkitem--;
+			}
+			mes "[Repairman]";
+			mes "Okay! All done. Now, try to be a little more careful. Items have lives too you know.";
+			close;
+		case 2:
+			mes "[Repairman]";
+			mes "Well, it's no skin off my nose, but it's not good to leave items damaged. You should get them repaired as soon as possible!";
+			close;
+		}
+	case 2:
+		mes "[Repairman]";
+		mes "Hohoho...";
+		mes "You don't have";
+		mes "any business with me";
+		mes "if you don't have any";
+		mes "items to repair.";
+		close;
+	}
+	end;
+}
+
 payo2,82,116,4	script	Guide#oldpay	708,{
 	cutin "pay_soldier",2;
 	mes "[Payon Soldier]";
@@ -1967,3 +2017,131 @@ pa2_in01,174,113,2	script	Marx Hansen#juiceold	86,{
 }
 */
 
+
+//############################################################################################################################################################
+// Name Changer
+//############################################################################################################################################################
+
+pa2_in01,95,19,4	script	Name Changer#oldpay	86,{
+	mes "[Name Changer]";
+	mes "I can rewrite the threads of fate";
+	mes "and grant you an entirely new name.";
+	next;
+	mes "[Name Changer]";
+	mes "Your current name is ^0055FF" + strcharinfo(0) + "^000000.";
+	if (.Cost > 0)
+		mes "A name change costs ^FF0000" + callfunc("F_InsertComma", .Cost) + "^000000 zeny.";
+	if (.ItemID > 0)
+		mes "It also requires ^FF0000" + .ItemAmt + "x " + getitemname(.ItemID) + "^000000.";
+	next;
+	if (select(" ~ Change my name: ~ Cancel") == 2) {
+		mes "[Name Changer]";
+		mes "Come back when you have made up your mind.";
+		close;
+	}
+
+	if (.Cost > 0 && Zeny < .Cost) {
+		mes "[Name Changer]";
+		mes "You do not have enough zeny.";
+		close;
+	}
+	if (.ItemID > 0 && countitem(.ItemID) < .ItemAmt) {
+		mes "[Name Changer]";
+		mes "You are missing the required item.";
+		close;
+	}
+
+	mes "[Name Changer]";
+	mes "Type the new name you wish to carry.";
+	mes "(" + .MinLen + "-" + .MaxLen + " characters; letters, numbers,";
+	mes "spaces, _ and - only.)";
+	next;
+	input .@new$, .MinLen, .MaxLen;
+
+	// Validate length, formatting and allowed characters.
+	.@len = getstrlen(.@new$);
+	.@valid = 1;
+	if (.@len < .MinLen || .@len > .MaxLen)
+		.@valid = 0;
+	else if (charat(.@new$, 0) == " " || charat(.@new$, .@len - 1) == " ")
+		.@valid = 0;
+	else {
+		.@allowed$ = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 _-";
+		for (.@i = 0; .@i < .@len; .@i++) {
+			if (strpos(.@allowed$, charat(.@new$, .@i)) < 0) {
+				.@valid = 0;
+				break;
+			}
+		}
+	}
+	if (!.@valid) {
+		mes "[Name Changer]";
+		mes "That name has invalid characters or formatting.";
+		mes "Please try again.";
+		close;
+	}
+
+	if (.@new$ == strcharinfo(0)) {
+		mes "[Name Changer]";
+		mes "That is already your name.";
+		close;
+	}
+
+	// Make sure no other character already uses this name.
+	.@esc$ = escape_sql(.@new$);
+	if (query_sql("SELECT `char_id` FROM `char` WHERE `name` = '" + .@esc$ + "'", .@taken) > 0) {
+		mes "[Name Changer]";
+		mes "Someone already goes by that name.";
+		mes "Please choose another.";
+		close;
+	}
+
+	mes "[Name Changer]";
+	mes "Change your name to ^0055FF" + .@new$ + "^000000?";
+	mes "This cannot be undone, and you will be";
+	mes "returned to the login screen afterwards.";
+	next;
+	if (select(" ~ Yes, do it: ~ No") == 2) {
+		mes "[Name Changer]";
+		mes "Very well, no harm done.";
+		close;
+	}
+
+	// Re-check requirements in case zeny/items changed during the dialog.
+	if (.Cost > 0 && Zeny < .Cost) {
+		mes "[Name Changer]";
+		mes "You do not have enough zeny.";
+		close;
+	}
+	if (.ItemID > 0 && countitem(.ItemID) < .ItemAmt) {
+		mes "[Name Changer]";
+		mes "You are missing the required item.";
+		close;
+	}
+
+	if (.Cost > 0)
+		Zeny -= .Cost;
+	if (.ItemID > 0)
+		delitem .ItemID, .ItemAmt;
+
+	// The periodic character save does NOT write the `name` column, so updating
+	// it directly here is safe. The change only takes effect on relog, so the
+	// character is kicked immediately afterwards.
+	query_sql("UPDATE `char` SET `name` = '" + .@esc$ + "' WHERE `char_id` = " + getcharid(0));
+
+	mes "[Name Changer]";
+	mes "It is done. From this moment you shall be";
+	mes "known as ^0055FF" + .@new$ + "^000000.";
+	mes "You will now be sent to the login screen.";
+	close2;
+	atcommand "@kick " + strcharinfo(0);
+	end;
+
+OnInit:
+	.Cost = 0;		// Zeny cost (set 0 to disable)
+	.ItemID = 0;		// Required item ID (set 0 to disable)
+	.ItemAmt = 1;		// Required item amount
+	.MinLen = 4;		// Minimum new name length
+	.MaxLen = 23;		// Maximum new name length (hard cap is 23)
+	end;
+}

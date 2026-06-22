@@ -19,7 +19,7 @@ payo2,99,116,4	script	Kafra Employee::kaf_oldpayon	113,{
 	mes "How may I be of assistance?";
 	next;
 
-	setarray .@K_Menu$[0],"Save","Use Storage","Rent a Pushcart","Rent everything","Check Other Information","Cancel";
+	setarray .@K_Menu$[0],"Save","Use Storage","Rent everything","Cancel";
 	while (true) {
 		.@j = select(implode(.@K_Menu$,":")) - 1;
 		if (.@K_Menu$[.@j] == "Save") {
@@ -30,10 +30,6 @@ payo2,99,116,4	script	Kafra Employee::kaf_oldpayon	113,{
 		else if (.@K_Menu$[.@j] == "Use Storage") {
 			callfunc "F_KafStor",0,60,5;
 			next;
-		}
-		else if (.@K_Menu$[.@j] == "Rent a Pushcart") {
-			if (callfunc("F_KafCart",5,930) == 1)
-				next;
 		}
 		else if (.@K_Menu$[.@j] == "Rent everything") {
 			// Universal rental logic (from npc/custom/breeder.txt), inlined
@@ -75,10 +71,6 @@ payo2,99,116,4	script	Kafra Employee::kaf_oldpayon	113,{
 				message strcharinfo(0),"You do not meet requirements to rent.";
 			callfunc "F_KafEnd",5,0;
 			end;
-		}
-		else if (.@K_Menu$[.@j] == "Check Other Information") {
-			callfunc "F_KafInfo",1;
-			next;
 		}
 		else if (.@K_Menu$[.@j] == "Cancel") {
 			callfunc "F_KafEnd",5,0;

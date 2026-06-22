@@ -21,6 +21,7 @@ Body:
       autoloottype: true
       autotrade: true
       channel: true
+      storage: true
       mobinfo: true
       iteminfo: true
       whodrops: true
