@@ -17,11 +17,9 @@ For every BaseExp / JobExp list, anchored on its level-1 value E1:
 
     NewExp(n) = round( E1 * (OrigExp(n) / E1) ** K )
 
-with K < 1.0 (lower = flatter; 1.0 reproduces the official curve). The base and
-job curves use separate exponents (BASE_FLATTEN_K / JOB_FLATTEN_K) so job
-leveling can be flattened more aggressively than base leveling. With
-BASE_FLATTEN_K=0.5 / JOB_FLATTEN_K=0.4, the trans 2-2 curve reaches Job 70 at
-roughly the same cumulative EXP as Base 90.
+with K < 1.0 (lower = flatter; 1.0 reproduces the official curve). The base curve
+uses BASE_FLATTEN_K and all job curves use JOB_FLATTEN_K, so job leveling can be
+paced separately from base leveling.
 
 Cap level "follows the curve": the source stores each list's max level as a
 sentinel (e.g. 999 / 99999 / 9999999 / 999999999 / 999999999999). Flattening
@@ -40,10 +38,10 @@ import re
 
 # --- Tunables --------------------------------------------------------------
 # Compression exponents. 1.0 = official shape, lower = flatter. Base and job
-# curves are flattened independently so job leveling can be made faster than
-# base leveling. JOB_FLATTEN_K=0.4 syncs trans 2-2 Job 70 to ~Base 90.
+# curves are flattened independently so job leveling can be paced separately from
+# base leveling.
 BASE_FLATTEN_K = 0.5
-JOB_FLATTEN_K = 0.4
+JOB_FLATTEN_K = 0.45
 # ---------------------------------------------------------------------------
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
