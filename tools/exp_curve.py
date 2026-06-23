@@ -26,8 +26,8 @@ another tier's solved K, and everything else uses JOB_FLATTEN_K_DEFAULT.
 Per-tier job K is solved from base-level targets. A kill grants base and job EXP
 at the same time and job level resets on each job change while base level keeps
 climbing, so each job is leveled over a base-level segment [base_start, base_end].
-Assuming a mob gives base:job EXP in ratio MOB_BASE_JOB_RATIO (R), the job cap is
-reached at base_end when:
+Assuming effective job:base EXP income ratio R (mob ratio scaled by the live
+job/base EXP rates; see ratio_for), the job cap is reached at base_end when:
 
     cumulative_job_exp(job_cap) = ( cum_base(base_end) - cum_base(base_start) ) * R
 
@@ -54,16 +54,23 @@ import re
 # Base curve compression exponent. 1.0 = official shape, lower = flatter.
 BASE_FLATTEN_K = 0.5
 
-# Effective job:base EXP ratio per kill: f = (job EXP earned) / (base EXP earned).
-# Mob JobExp is well below BaseExp and rises with monster level (~0.3 low, ~0.8
-# high in db/re/mob_db.yml), so job EXP lags base EXP. This sets how job pace maps
-# to base level when solving K: a lower f means job lags base more, so the solver
-# flattens that job curve more to still hit the target. Per-tier values observed
-# in-game take precedence over the default below.
-MOB_BASE_JOB_RATIO = 0.65
-MOB_BASE_JOB_RATIO_OVERRIDE = {
-    "Swordman": 0.81,   # observed: job 50 reached ~base 67 under the prior curve
-    "Knight":   0.54,   # observed: job 20 at base 80 under the prior curve
+# Live server EXP rates. Keep these in sync with conf/import/battle_conf.txt.
+# Only their ratio (JOB_EXP_RATE / BASE_EXP_RATE) affects curve solving. Raising
+# job_exp_rate lifts effective job income, so the solver can use steeper (more
+# natural) job curves and high tiers like 4th become reachable.
+BASE_EXP_RATE = 500
+JOB_EXP_RATE = 1000
+
+# Raw mob job:base EXP ratio (from db/re/mob_db.yml and in-game observation),
+# BEFORE server rates. Effective job:base income per kill that the solver uses is
+#   f = mob_ratio * JOB_EXP_RATE / BASE_EXP_RATE
+# Mob JobExp is ~0.3 (low level) to ~0.8 (high level) of BaseExp. Per-tier values
+# observed in-game take precedence over the default.
+MOB_JOB_BASE_RATIO = 0.65
+MOB_JOB_BASE_RATIO_OVERRIDE = {
+    "Swordman":      0.45,  # observed: job 40 at base 50 (equal rates)
+    "Swordman_High": 0.45,  # inferred from 1st (same early mobs); no direct data yet
+    "Knight":        0.54,  # observed: job 20 at base 80 (equal rates)
 }
 
 # K applied to any job tier that has neither a target nor a mirror. Every tier
@@ -248,8 +255,9 @@ def group_match(g, table):
 
 
 def ratio_for(rep):
-    """Effective job:base EXP ratio for a tier (per-tier override or default)."""
-    return MOB_BASE_JOB_RATIO_OVERRIDE.get(rep, MOB_BASE_JOB_RATIO)
+    """Effective job:base EXP income ratio for a tier, after server rates."""
+    mob = MOB_JOB_BASE_RATIO_OVERRIDE.get(rep, MOB_JOB_BASE_RATIO)
+    return mob * JOB_EXP_RATE / BASE_EXP_RATE
 
 
 def main():
@@ -357,7 +365,8 @@ def main():
         fh.writelines(out)
 
     print(f"Rewrote {TARGET}")
-    print(f"BASE_FLATTEN_K={BASE_FLATTEN_K}  MOB_BASE_JOB_RATIO(default)={MOB_BASE_JOB_RATIO}  "
+    print(f"BASE_FLATTEN_K={BASE_FLATTEN_K}  rates job/base={JOB_EXP_RATE}/{BASE_EXP_RATE} "
+          f"(x{JOB_EXP_RATE / BASE_EXP_RATE:g})  mob_ratio(default)={MOB_JOB_BASE_RATIO}  "
           f"JOB_FLATTEN_K_DEFAULT={JOB_FLATTEN_K_DEFAULT}\n")
 
     print(f"{'tier':16}{'cap':>5}{'K':>8}{'feasible':>10}{'f':>7}"

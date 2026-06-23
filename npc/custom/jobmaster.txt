@@ -119,12 +119,10 @@ function	Check_Riding	{
 	return;
 }
 function	Check_SkillPoints	{
-	// Novice-type classes (Novice, High Novice after rebirth, Baby Novice)
-	// are meant to carry their skill points over into their first job, so
-	// don't force them to be spent here. Otherwise a rebirthed High Novice
-	// who has leveled up accumulates points it cannot spend and would be
-	// permanently blocked from changing class.
-	if (Class == Job_Novice || Class == Job_Novice_High || Class == Job_Baby)
+	// Only a rebirthed High Novice is exempt: it can accumulate more skill
+	// points than Basic Skill can hold, which would permanently block the
+	// class change. Regular Novice and Baby Novice must still spend theirs.
+	if (Class == Job_Novice_High)
 		return;
 	if (.SkillPointCheck && SkillPoint) {
 		mes "Please use all your skill points before proceeding.";

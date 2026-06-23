@@ -60,7 +60,12 @@ feature.bgqueue: off
 // an override in db/import/job_stats.yml, so the lower rate slows the early
 // game while the flatter curve keeps the late game faster.
 base_exp_rate: 500
-job_exp_rate: 500
+// Job EXP at 2x base (1000 vs 500). Mob JobExp is only ~0.45-0.65 of BaseExp,
+// so this lifts effective job income toward ~1:1 with base. Curves in
+// db/import/job_stats.yml are solved (tools/exp_curve.py) for this ratio, so job
+// caps still land on their target base levels but with steeper, more natural
+// curves; high tiers (4th) become reachable. Keep in sync with JOB_EXP_RATE.
+job_exp_rate: 1000
 mvp_exp_rate: 500
 quest_exp_rate: 500
 // Extra EXP per additional attacker on a monster (default 25).
