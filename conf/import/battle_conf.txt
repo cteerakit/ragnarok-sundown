@@ -65,3 +65,5 @@ mvp_exp_rate: 1000
 quest_exp_rate: 1000
 // Extra EXP per additional attacker on a monster (default 25).
 exp_bonus_attacker: 100
+// Disable death penalty entirely (0 = no EXP loss on death).
+death_penalty_type: 0
