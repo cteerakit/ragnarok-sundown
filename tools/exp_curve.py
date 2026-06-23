@@ -54,10 +54,17 @@ import re
 # Base curve compression exponent. 1.0 = official shape, lower = flatter.
 BASE_FLATTEN_K = 0.5
 
-# Assumed mob base:job EXP accrual ratio when mapping job pace to base level.
-# R = 1.0 means a kill grants equal base and job EXP. Raise it if your mobs give
-# less job EXP than base EXP (which pushes job caps to higher base levels).
-MOB_BASE_JOB_RATIO = 1.0
+# Effective job:base EXP ratio per kill: f = (job EXP earned) / (base EXP earned).
+# Mob JobExp is well below BaseExp and rises with monster level (~0.3 low, ~0.8
+# high in db/re/mob_db.yml), so job EXP lags base EXP. This sets how job pace maps
+# to base level when solving K: a lower f means job lags base more, so the solver
+# flattens that job curve more to still hit the target. Per-tier values observed
+# in-game take precedence over the default below.
+MOB_BASE_JOB_RATIO = 0.65
+MOB_BASE_JOB_RATIO_OVERRIDE = {
+    "Swordman": 0.81,   # observed: job 50 reached ~base 67 under the prior curve
+    "Knight":   0.54,   # observed: job 20 at base 80 under the prior curve
+}
 
 # K applied to any job tier that has neither a target nor a mirror. Every tier
 # currently has one, so this is an unused safety fallback.
@@ -70,13 +77,13 @@ JOB_FLATTEN_K_DEFAULT = 0.5
 # leveling this tier (Novice = normal base-99, Novice_High = trans base-99,
 # Rune_Knight = 3rd base-200, Dragon_Knight = 4th base-275, Summoner = base-200).
 JOB_TARGETS = {
-    "Swordman":      ("Novice",        10,  60),
+    "Swordman":      ("Novice",        10,  50),
     "Knight":        ("Novice",        60,  90),
     "Lord_Knight":   ("Novice_High",   60,  90),
     "Rune_Knight":   ("Rune_Knight",   99,  180),
     "Summoner":      ("Summoner",      1,   180),
     "Dragon_Knight": ("Dragon_Knight", 200, 272),
-    "Swordman_High": ("Novice_High",   10,  60),
+    "Swordman_High": ("Novice_High",   10,  50),
     "Super_Novice":  ("Novice",        1,   90),
     "Super_Novice_E":("Rune_Knight",   1,   160),
 }
@@ -240,6 +247,11 @@ def group_match(g, table):
     return None
 
 
+def ratio_for(rep):
+    """Effective job:base EXP ratio for a tier (per-tier override or default)."""
+    return MOB_BASE_JOB_RATIO_OVERRIDE.get(rep, MOB_BASE_JOB_RATIO)
+
+
 def main():
     if not os.path.exists(SOURCE):
         raise SystemExit(f"Cannot find source curve {SOURCE}")
@@ -251,17 +263,19 @@ def main():
 
     # Solve K for every targeted tier.
     solved = {}        # rep -> k
-    report = []        # (rep, cap, k, feasible, job_exp, base_seg, reached_base, target_base)
+    report = []        # (rep, cap, k, feasible, ratio, job_exp, reached_base, target_base)
     for rep, (bcurve, start, end) in JOB_TARGETS.items():
         g = find_group(groups, rep, "job")
         cap = g["maxjob"]
         cum = base_cumulative(groups, bcurve)
-        rhs = (cum[end] - cum[start]) * MOB_BASE_JOB_RATIO
+        r = ratio_for(rep)
+        rhs = (cum[end] - cum[start]) * r
         k, ok = solve_k(g, cap, rhs)
         solved[rep] = k
         job_exp = job_cumulative_to_cap(g, cap, k)
-        reached = crossover_base(cum, start, job_exp)
-        report.append((rep, cap, k, ok, job_exp, rhs, reached, end))
+        # Real base level the cap lands at: job EXP converts to base EXP via 1/f.
+        reached = crossover_base(cum, start, job_exp / r)
+        report.append((rep, cap, k, ok, r, job_exp, reached, end))
 
     # Resolve K per group: target, then mirror, then default.
     group_k = []
@@ -343,14 +357,14 @@ def main():
         fh.writelines(out)
 
     print(f"Rewrote {TARGET}")
-    print(f"BASE_FLATTEN_K={BASE_FLATTEN_K}  MOB_BASE_JOB_RATIO={MOB_BASE_JOB_RATIO}  "
+    print(f"BASE_FLATTEN_K={BASE_FLATTEN_K}  MOB_BASE_JOB_RATIO(default)={MOB_BASE_JOB_RATIO}  "
           f"JOB_FLATTEN_K_DEFAULT={JOB_FLATTEN_K_DEFAULT}\n")
 
-    print(f"{'tier':16}{'cap':>5}{'K':>8}{'feasible':>10}"
-          f"{'job EXP':>16}{'base seg EXP':>18}{'reached':>9}{'target':>8}")
-    for rep, cap, k, ok, job_exp, rhs, reached, end in report:
-        print(f"{rep:16}{cap:>5}{k:>8.3f}{('yes' if ok else 'CLAMP'):>10}"
-              f"{job_exp:>16,}{int(rhs):>18,}{str(reached):>9}{end:>8}")
+    print(f"{'tier':16}{'cap':>5}{'K':>8}{'feasible':>10}{'f':>7}"
+          f"{'job EXP':>16}{'reached':>9}{'target':>8}")
+    for rep, cap, k, ok, r, job_exp, reached, end in report:
+        print(f"{rep:16}{cap:>5}{k:>8.3f}{('yes' if ok else 'CLAMP'):>10}{r:>7.2f}"
+              f"{job_exp:>16,}{str(reached):>9}{end:>8}")
 
     print("\nMirrors (copy solved K):")
     for rep, src in JOB_FLATTEN_K_MIRROR.items():
