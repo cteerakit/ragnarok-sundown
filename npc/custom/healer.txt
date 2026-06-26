@@ -31,6 +31,7 @@
 	}
 	specialeffect2 EF_HEAL2;
 	percentheal 100,100;
+	repairall;
 	// Cure debuff status ailments
 	sc_end SC_POISON;
 	sc_end SC_DPOISON;
@@ -52,11 +53,44 @@
 	sc_end SC_MANDRAGORA;
 	sc_end SC_FEAR;
 	sc_end SC_DEEPSLEEP;
+	sc_end SC_VOICEOFSIREN;
+	sc_end SC_HARMONIZE;
+	sc_end SC_CRITICALWOUND;
+	sc_end SC_STRIPWEAPON;
+	sc_end SC_STRIPARMOR;
+	sc_end SC_STRIPSHIELD;
+	sc_end SC_STRIPHELM;
 	if (.@Buffs) {
+		// Basic Buffs (20 Min)
 		specialeffect2 EF_INCAGILITY;
-		sc_start SC_INCREASEAGI,600000,10;
+		sc_start SC_INCREASEAGI,1200000,10;
 		specialeffect2 EF_BLESSING;
-		sc_start SC_BLESSING,600000,10;
+		sc_start SC_BLESSING,1200000,10;
+
+		// Additional Priest Buffs (20 Min)
+		specialeffect2 EF_KYRIE;
+		sc_start SC_KYRIE,1200000,10;
+		specialeffect2 EF_MAGNIFICAT;
+		sc_start SC_MAGNIFICAT,1200000,5;
+		specialeffect2 EF_GLORIA;
+		sc_start SC_GLORIA,1200000,5;
+		specialeffect2 EF_ASSUMPTIO;
+		sc_start SC_ASSUMPTIO,1200000,5;
+
+		// Decreased Cast Time (Sacrament 50% Fixed Cast Reduction - 20 Min)
+		sc_start SC_SECRAMENT,1200000,5;
+
+		// Impositio Manus (+ATK - 20 Min)
+		specialeffect2 EF_IMPOSITIO;
+		sc_start SC_IMPOSITIO,1200000,5;
+
+		// Status Foods +10 (20 Min)
+		sc_start SC_FOOD_STR_CASH,1200000,10;
+		sc_start SC_FOOD_AGI_CASH,1200000,10;
+		sc_start SC_FOOD_VIT_CASH,1200000,10;
+		sc_start SC_FOOD_INT_CASH,1200000,10;
+		sc_start SC_FOOD_DEX_CASH,1200000,10;
+		sc_start SC_FOOD_LUK_CASH,1200000,10;
 	}
 	if (.@Delay)
 		@HD = gettimetick(2) + .@Delay;
